@@ -23,6 +23,7 @@ const styles = StyleSheet.create({
 
 let refTimes = [[0, 30], [0, 30]]
 let refText = ["WORK", "BREAK"]
+let refPause = ["Start", "Pause"]
 let ind = 0 // 0 if working, 1 if break
 
 export class Timer extends React.Component {
@@ -32,7 +33,9 @@ export class Timer extends React.Component {
       time: refTimes[0][0]*60 + refTimes[0][1],
       sec: this.formatSec(refTimes[0][1]),
       min: refTimes[0][0],
-      state: refText[0]
+      state: refText[0],
+      pause: 0,
+      pauseText: refPause[1]
     }
   }
 
@@ -41,24 +44,46 @@ export class Timer extends React.Component {
     return t.toString()
   }
 
+  toggle = () => {
+    this.setState(prevState => ({
+      pause: 1 - prevState.pause,
+      pauseText: refPause[prevState.pause]
+    }))
+    if (this.state.pause) this.interval = setInterval(this.inc, 1000)
+    else clearInterval(this.interval)
+  }
+
+  reset = () => {
+    this.setState(prevState => ({
+      time: refTimes[0][0]*60 + refTimes[0][1],
+      sec: this.formatSec(refTimes[0][1]),
+      min: refTimes[0][0],
+      state: refText[0],
+      pause: 1,
+      pauseText: refPause[0]
+    }))
+    clearInterval(this.interval)
+  }
+
   inc = () => {
-    if (this.state.time > 0) {
-      this.setState(prevState => ({
-        time: prevState.time - 1,
-        sec: this.formatSec(this.state.time % 60),
-        min: Math.floor(this.state.time / 60)
-      }))
-      
-    }
-    else {
-      ind = (ind + 1) % 2
-      vibrate()
-      this.setState(() => ({
-        time: refTimes[ind][0] * 60 + refTimes[ind][1],
-        sec: refTimes[ind][1],
-        min: refTimes[ind][0],
-        state: refText[ind]
-      }))
+    if (!this.state.pause) {
+      if (this.state.time > 0) {
+        this.setState(prevState => ({
+          time: prevState.time - 1,
+          sec: this.formatSec((prevState.time-1) % 60),
+          min: Math.floor((prevState.time-1) / 60)
+        }))
+      }
+      else {
+        ind = 1 - ind
+        vibrate()
+        this.setState(() => ({
+          time: refTimes[ind][0] * 60 + refTimes[ind][1],
+          sec: refTimes[ind][1],
+          min: refTimes[ind][0],
+          state: refText[ind]
+        }))
+      }
     }
   }
 
@@ -76,7 +101,7 @@ export class Timer extends React.Component {
         <Text style={styles.text}>{this.state.state} TIME</Text>
         <Text style={styles.time}>{this.state.min}:{this.state.sec}</Text>
         <View style={styles.buttonContainer}>
-          <Button title="Pause" onPress={this.toggle} />
+          <Button title={this.state.pauseText} onPress={this.toggle} />
           <Button title="Reset" onPress={this.reset} />
         </View>
       </View>

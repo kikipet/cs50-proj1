@@ -1,27 +1,43 @@
 import React from "react";
-import {View, Button, Text, ScrollView, StyleSheet, Switch} from 'react-native';
+import { View, Button, Text, StyleSheet, TextInput } from 'react-native';
 import Constants from 'expo-constants';
 import vibrate from './utils/vibrate.js';
+import { setStatusBarNetworkActivityIndicatorVisible } from "expo-status-bar";
 
 const styles = StyleSheet.create({
-    timerContainer: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingTop: Constants.statusBarHeight
-    },
-    buttonContainer: {
-      flexDirection: 'row',
-    },
-    text: {
-      fontSize: 24,
-    },
-    time: {
-      fontSize: 48,
-    },
-  })
+  timerContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: Constants.statusBarHeight,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+  },
+  text: {
+    fontSize: 24,
+  },
+  time: {
+    fontSize: 48,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center'
+  },
+  inputs: {
+    flexDirection: 'column',
+    alignItems: 'center'
+  },
+  input: {
+    // backgroundColor: '#fff',
+    borderWidth: 1,
+    borderRadius: 5,
+    borderColor: '#5fb8ee',
+    paddingRight: 10
+  }
+})
 
-let refTimes = [[0, 30], [0, 30]]
+let refTimes = [[25, 0], [5, 0]]
 let refText = ["WORK", "BREAK"]
 let refPause = ["Start", "Pause"]
 let ind = 0 // 0 if working, 1 if break
@@ -30,12 +46,14 @@ export class Timer extends React.Component {
   constructor() {
     super()
     this.state = {
-      time: refTimes[0][0]*60 + refTimes[0][1],
+      time: refTimes[0][0] * 60 + refTimes[0][1],
       sec: this.formatSec(refTimes[0][1]),
       min: refTimes[0][0],
       state: refText[0],
       pause: 0,
-      pauseText: refPause[1]
+      pauseText: refPause[1],
+      inputWM: 25,
+      inputWS: 0
     }
   }
 
@@ -55,7 +73,7 @@ export class Timer extends React.Component {
 
   reset = () => {
     this.setState(prevState => ({
-      time: refTimes[0][0]*60 + refTimes[0][1],
+      time: refTimes[0][0] * 60 + refTimes[0][1],
       sec: this.formatSec(refTimes[0][1]),
       min: refTimes[0][0],
       state: refText[0],
@@ -70,8 +88,8 @@ export class Timer extends React.Component {
       if (this.state.time > 0) {
         this.setState(prevState => ({
           time: prevState.time - 1,
-          sec: this.formatSec((prevState.time-1) % 60),
-          min: Math.floor((prevState.time-1) / 60)
+          sec: this.formatSec((prevState.time - 1) % 60),
+          min: Math.floor((prevState.time - 1) / 60)
         }))
       }
       else {
@@ -79,12 +97,16 @@ export class Timer extends React.Component {
         vibrate()
         this.setState(() => ({
           time: refTimes[ind][0] * 60 + refTimes[ind][1],
-          sec: refTimes[ind][1],
+          sec: this.formatSec(refTimes[ind][1]),
           min: refTimes[ind][0],
           state: refText[ind]
         }))
       }
     }
+  }
+
+  updateDefault = (t, i, j) => {
+    refTimes[i][j] = parseInt(t, 10)
   }
 
   componentDidMount() {
@@ -104,6 +126,37 @@ export class Timer extends React.Component {
           <Button title={this.state.pauseText} onPress={this.toggle} />
           <Button title="Reset" onPress={this.reset} />
         </View>
+        <View style={styles.inputContainer}>
+          <View style={styles.inputs}>
+            <Text>Work</Text>
+            <View>
+              <Text>Minutes: </Text>
+              <TextInput 
+                style={styles.input}
+                onChangeText={(text) => this.updateDefault(text, 0, 0)} />
+              <Text>Seconds:</Text>
+              <TextInput 
+                style={styles.input} 
+                onChangeText={(text) => this.updateDefault(text, 0, 1)} />
+            </View>
+            {/* <Button title="Change work time" onPress={this.reset} /> */}
+          </View>
+          <View style={styles.inputs}>
+            <Text>Break</Text>
+            <View>
+              <Text>Minutes: </Text>
+              <TextInput 
+                style={styles.input}
+                onChangeText={(text) => this.updateDefault(text, 1, 0)} />
+              <Text>Seconds:</Text>
+              <TextInput 
+                style={styles.input} 
+                onChangeText={(text) => this.updateDefault(text, 1, 1)} />
+            </View>
+            {/* <Button title="Change break time" onPress={this.reset} /> */}
+          </View>
+        </View>
+        <Button title="Update times" onPress={this.reset} />
       </View>
     )
   }

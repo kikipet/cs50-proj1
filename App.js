@@ -1,7 +1,6 @@
 import React from "react";
 import {View, Button, Text, ScrollView, StyleSheet, Switch} from 'react-native';
 import Constants from 'expo-constants';
-import {vibrate} from './utils/vibrate.js';
 import {Timer} from './Timer.js'
 
 const styles = StyleSheet.create({
@@ -9,7 +8,8 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingTop: Constants.statusBarHeight
+    paddingTop: Constants.statusBarHeight,
+    // backgroundColor: '#eee'
   },
 })
 
